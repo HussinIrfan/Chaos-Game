@@ -22,7 +22,6 @@ int main()
 
 	vector<Vector2f> vertices;//First 3 clicks
 	vector<Vector2f> point; //4th click and beyond
-
 	Vector2f clicked; //User clicks
 	Event event;
 
@@ -32,7 +31,7 @@ int main()
 	int userClicks = 0; //increments based on users Clicks
 	int maxClicks = 0; //Sets max number of clicks based on fractal choice
 	int tempNum = 10; //Used for functions Square and Pentagon, makes sure random num isn't same as last random num
-	int speed = 1000;
+	int speed = 100; //Speed Drawn
 
 	Font font; //load text, set font
 	if (!font.loadFromFile("Font/KOMIKAX.ttf"))
@@ -61,21 +60,18 @@ int main()
 			{
 				if (event.key.code == Keyboard::Num1)
 				{
-					cout << "User entered 1" << endl;
 					maxClicks = 3;
 					endShape = false;
 					text.setString("Click 3 points, then 4th to draw fractal\nClick ESC To Exit Program");
 				}
 				if (event.key.code == Keyboard::Num2)
 				{
-					cout << "User entered 2" << endl;
 					maxClicks = 4;
 					endShape = false;
 					text.setString("Click 4 points, then 5th to draw fractal\nClick ESC To Exit Program");
 				}
 				if (event.key.code == Keyboard::Num3)
 				{
-					cout << "User entered 3" << endl;
 					maxClicks = 5;
 					endShape = false;
 					text.setString("Click 5 points, then 6th to draw fractal\nClick ESC To Exit Program");
