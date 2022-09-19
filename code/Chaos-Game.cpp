@@ -6,41 +6,16 @@
 using namespace sf;
 using namespace std;
 
-
-vector<Vector2f> returnTriangle(vector<Vector2f> v, vector<Vector2f> midpoint) //Triangle: Creates midpoint and updates point vector
-{
-	int randNum = rand() % 3;
-	Vector2f temp;
-
-	temp.x = (midpoint[midpoint.size() - 1].x + v[randNum].x) / 2;
-	temp.y = (midpoint[midpoint.size() - 1].y + v[randNum].y)/2;
-	midpoint.push_back(Vector2f(temp.x, temp.y));
-
-	return midpoint;
-};
-
-vector<Vector2f> returnSquare(vector<Vector2f> v, vector<Vector2f> midpoint, int &tempNum) //Square: Creates midpoint and updates point vector
-{
-	int randNum = rand() % 4;
-	Vector2f temp;
-
-	while (tempNum == randNum) //ensures random num isnt same as last random num
-		randNum = rand() % 4;
-
-	tempNum = randNum; //updates new random num, passed by reference so saves globally
-
-	temp.x = (midpoint[midpoint.size() - 1].x + v[randNum].x) / 2;
-	temp.y = (midpoint[midpoint.size() - 1].y + v[randNum].y) / 2;
-	midpoint.push_back(Vector2f(temp.x, temp.y));
-
-	return midpoint;
-};
+void returnTriangle(vector<Vector2f>& vertices, vector<Vector2f>& midpoint); //Triangle: Creates midpoint and updates point vector
+void returnSquare(vector<Vector2f>& vertices, vector<Vector2f>& midpoint, int& tempNum); //Square: Creates midpoint and updates point vector
+void returnPentagon(vector<Vector2f>& vertices, vector<Vector2f>& midpoint, int& tempNum); //Square: Creates midpoint and updates point vector
 
 int main()
 {
 	srand((int)time(0));
-
-	VideoMode vm(1920, 1080); // Create a video mode object
+	int width = 1920;
+	int height = 1080;
+	VideoMode vm(width, height); // Create a video mode object
 	RenderWindow window(vm, "Sierpinksi Triangle!!", Style::Default); // Create and open a window for the game
 	RectangleShape rect(Vector2f{ 1,1 }); //Set the size of rectangles and color
 	rect.setFillColor(Color::White);
@@ -52,9 +27,24 @@ int main()
 	Event event;
 
 	bool endClicks = true; //Flips to stop user input after maxClicks
+	bool endShape = true; //Flips after user chooses shape
+
 	int userClicks = 0; //increments based on users Clicks
-	int maxClicks = 3; //Should be either 3 or 4 based on user input, max vertices allowed
-	int tempNum = 10; //Used for square function, makes sure random num isn't same as last random num
+	int maxClicks = 0; //Sets max number of clicks based on fractal choice
+	int tempNum = 10; //Used for functions Square and Pentagon, makes sure random num isn't same as last random num
+	int speed = 1000;
+
+	Font font; //load text, set font
+	if (!font.loadFromFile("Font/KOMIKAX.ttf"))
+	{
+	    cout << "Error loading font";
+	}
+	Text text;
+	text.setFont(font);
+	text.setString("Welcome To The Chaos Game!\nClick 1 To Draw Triangle\nClick 2 To Draw Rectangle\nClick 3 To Draw Pentagon\nClick ESC To Exit Program");
+	text.setCharacterSize(25);
+	text.setFillColor(Color::White);
+	
 
 	while (window.isOpen())  //Main Loop
 	{
@@ -65,19 +55,39 @@ int main()
 			window.close();
 		}
 
-		while (window.pollEvent(event)) //Gets user input for clicks
+		while (window.pollEvent(event)) //Gets user input for clicks and shape
 		{
-			//if (event.type == sf::Event::Closed)  //Not sure what this does
-				//window.close();
-
-			if (event.type == Event::MouseButtonPressed && endClicks == true)
+			if (event.type == Event::KeyPressed && endShape == true)
+			{
+				if (event.key.code == Keyboard::Num1)
+				{
+					cout << "User entered 1" << endl;
+					maxClicks = 3;
+					endShape = false;
+					text.setString("Click 3 points, then 4th to draw fractal\nClick ESC To Exit Program");
+				}
+				if (event.key.code == Keyboard::Num2)
+				{
+					cout << "User entered 2" << endl;
+					maxClicks = 4;
+					endShape = false;
+					text.setString("Click 4 points, then 5th to draw fractal\nClick ESC To Exit Program");
+				}
+				if (event.key.code == Keyboard::Num3)
+				{
+					cout << "User entered 3" << endl;
+					maxClicks = 5;
+					endShape = false;
+					text.setString("Click 5 points, then 6th to draw fractal\nClick ESC To Exit Program");
+				}
+					
+			}
+			if (event.type == Event::MouseButtonPressed && endClicks == true && endShape == false)
 			{
 				if (event.mouseButton.button == Mouse::Left)
 				{
-					cout << "mouse x: " << event.mouseButton.x << endl;
-					cout << "mouse y: " << event.mouseButton.y << endl;
-					clicked.x = event.mouseButton.x;
-					clicked.y = event.mouseButton.y;
+						clicked.x = event.mouseButton.x;
+						clicked.y = event.mouseButton.y;
 
 					if (userClicks < maxClicks) //Three or Four Clicks, stores in two seperate vectors
 					{
@@ -93,22 +103,74 @@ int main()
 				}
 			}
 		}
-			if (endClicks == false) //Calls algorithm function after user done inputting
-			{
-				if (maxClicks == 3)
-					point = returnTriangle(vertices, point);
-				else if (maxClicks == 4)
-					point = returnSquare(vertices, point, tempNum);
-			}
 
-			for (int i = 0; i < point.size(); i++) //Draws every point stored in point vector
+		if (endClicks == false) //Calls algorithm functions after user done inputting
+		{
+			if (maxClicks == 3)
 			{
-				rect.setPosition(point[i].x, point[i].y);
-				window.draw(rect);
+				for (int i = 0; i <= speed; i++)
+					returnTriangle(vertices, point);
 			}
+			else if (maxClicks == 4)
+			{
+				for (int i = 0; i <= speed; i++)
+					returnSquare(vertices, point, tempNum);
+			}
+			else if (maxClicks == 5)
+			{
+				for (int i = 0; i <= speed; i++)
+					returnPentagon(vertices, point, tempNum);
+			}
+		}
 
-			window.display(); //Display 
+		for (int i = 0; i < point.size(); i++) //Draws every point stored in point vector
+		{
+			rect.setPosition(point[i].x, point[i].y);
+			window.draw(rect);
+		}
+
+		window.draw(text); //Draw text 
+		window.display(); //Display 
 
 	}
 	return 0;
 }
+
+void returnTriangle(vector<Vector2f>& vertices, vector<Vector2f>& midpoint) //Triangle: Creates midpoint and updates point vector
+{
+	int randNum = rand() % 3;
+	Vector2f temp;
+
+	temp.x = (midpoint[midpoint.size() - 1].x + vertices[randNum].x) / 2;
+	temp.y = (midpoint[midpoint.size() - 1].y + vertices[randNum].y) / 2;
+	midpoint.push_back(Vector2f(temp.x, temp.y));
+};
+
+void returnSquare(vector<Vector2f>& vertices, vector<Vector2f>& midpoint, int& tempNum) //Square: Creates midpoint and updates point vector
+{
+	int randNum = rand() % 4;
+	Vector2f temp;
+
+	while (tempNum == randNum) //ensures random num isnt same as last random num
+		randNum = rand() % 4;
+
+	tempNum = randNum; //updates new random num, passed by reference so saves globally
+
+	temp.x = (midpoint[midpoint.size() - 1].x + vertices[randNum].x) / 2;
+	temp.y = (midpoint[midpoint.size() - 1].y + vertices[randNum].y) / 2;
+	midpoint.push_back(Vector2f(temp.x, temp.y));
+};
+
+void returnPentagon(vector<Vector2f>& vertices, vector<Vector2f>& midpoint, int& tempNum) //Square: Creates midpoint and updates point vector
+{
+	int randNum = rand() % 5;
+	Vector2f temp;
+
+	while (tempNum == randNum) //ensures random num isnt same as last random num
+		randNum = rand() % 5;
+
+	tempNum = randNum; //updates new random num, passed by reference so saves globally
+	temp.x = (midpoint[midpoint.size() - 1].x + vertices[randNum].x) / 2;
+	temp.y = (midpoint[midpoint.size() - 1].y + vertices[randNum].y) / 2;
+	midpoint.push_back(Vector2f(temp.x, temp.y));
+};
